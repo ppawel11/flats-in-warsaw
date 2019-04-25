@@ -72,16 +72,16 @@ def get_data(url):
 	return flat
 	
 if __name__ == '__main__':
-	n = 899
+	pages = 899
 	if len(sys.argv)>1 and sys.argv[1].isdigit() and int(sys.argv[1]) < 899:
-		n = int(sys.argv[1])
+		pages = int(sys.argv[1])
 	result = []
 	start = time.time()
-	for url in get_flats(2):
+	for url in get_flats(pages):
 		f = get_data(url)
 		result.append(f)
 	stop = time.time()
-	print("Dane pobrane w: ", stop-start, "sekund")
+	print("Pobrano ", len(result)," mieszkań, w: ", stop-start, "sekund")
 	fieldnames = set()
 	for r in result:	
 		for k in list(r.keys()):
