@@ -82,10 +82,12 @@ if __name__ == '__main__':
 		result.append(f)
 	stop = time.time()
 	print("Pobrano ", len(result)," mieszkań, w: ", stop-start, "sekund")
-	fieldnames = set()
-	for r in result:	
-		for k in list(r.keys()):
-			fieldnames.add(k)
+	#fieldnames = set()
+	#for r in result:	
+	#	for k in list(r.keys()):
+	#		fieldnames.add(k)
+	
+	fieldnames = ['Rodzaj nieruchomości', 'Lokalizacja', 'Cena', 'Wielkość (m2)', 'Liczba pokoi', 'Liczba łazienek', 'Parking', 'Przyjazne zwierzakom', 'Palący', 'Do wynajęcia przez', 'Dostępny od', 'Data dodania', 'url']
 
 	with open("flats_test.csv", "w") as csvfile:
 		fieldnames = list(fieldnames)
