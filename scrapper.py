@@ -51,7 +51,6 @@ def get_data(url):
 	
 	price = details.find("div", {"class": "price"}).find("span", {"class": "value"}).text.strip()
 	if price.isalpha():
-		print("is")
 		flat['Cena'] = None
 	else:
 		flat['Cena'] = str_to_int(price)
