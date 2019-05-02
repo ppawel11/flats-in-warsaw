@@ -13,28 +13,26 @@ def str_to_int(text):
 def gener_url(n):
 	n = str(n)
 	url = "https://www.gumtree.pl/s-mieszkania-i-domy-do-wynajecia/warszawa/"
-	if n != "1":
-		url += "page-"+n+"/"
+	if n != "1": url += "page-"+n+"/"
 	url += "v1c9008l3200008p"+n
 	return url
 
 def get_flats(pages):
 	flats = []
-	timeout_counter = 0
 	for page_id in range(1,pages+1):
 		try:
 			page = req.Request(gener_url(page_id), headers={'User-Agent': 'Mozilla/5.0'})
 			sauce = req.urlopen(page).read()
 			soup = bs.BeautifulSoup(sauce,'lxml')
-		except request.Timeout:
-			timeout_counter += 1
-		
-		flats_view = soup.find_all("div", {"class": "view"})[1]
-		flats_results = flats_view.find_all("div", {"class": "result-link"})
-		for result in flats_results:
-			url = result.find("div", {"class": "title"}).find("a")["href"]
-			flats.append(url)
+		except:
+			continue
 
+		flats_view = soup.find_all("div", {"class": "tileV1"})		
+		for titleV1 in flats_view:
+			flats.append(titleV1.find("div", {"class": "title"}).find("a")['href'])
+	
+	print("Zbieranie adresów url mieszkań zakończone")
+	print("zebrano:\t", len(set(flats)))
 	return set(flats)
 
 def get_data(url):
@@ -44,14 +42,13 @@ def get_data(url):
 		page = req.Request(flat['url'], headers={'User-Agent': 'Mozilla/5.0'})
 		sauce = req.urlopen(page).read()
 		soup = bs.BeautifulSoup(sauce,'lxml')
-	except request.Timeout:
+	except:
 		return None
 	
 	details = soup.find("div", {"class": "vip-header-and-details"})
 	
 	price = details.find("div", {"class": "price"}).find("span", {"class": "value"}).text.strip()
 	if price.isalpha():
-		print("is")
 		flat['Cena'] = None
 	else:
 		flat['Cena'] = str_to_int(price)
@@ -78,20 +75,30 @@ if __name__ == '__main__':
 	result = []
 	start = time.time()
 	for url in get_flats(pages):
-		f = get_data(url)
-		result.append(f)
+		flt = get_data(url)
+		if flt: result.append(flt)
 	stop = time.time()
-	print("Pobrano ", len(result)," mieszkań, w: ", stop-start, "sekund")
-	#fieldnames = set()
+	
+	#just a way to get fieldnames out of collected results:
+	#fieldnames = set() 
 	#for r in result:	
 	#	for k in list(r.keys()):
 	#		fieldnames.add(k)
 	
+	#but this is faster:
 	fieldnames = ['Rodzaj nieruchomości', 'Lokalizacja', 'Cena', 'Wielkość (m2)', 'Liczba pokoi', 'Liczba łazienek', 'Parking', 'Przyjazne zwierzakom', 'Palący', 'Do wynajęcia przez', 'Dostępny od', 'Data dodania', 'url']
 
-	with open("flats_test.csv", "w") as csvfile:
-		fieldnames = list(fieldnames)
-		writer = csv.DictWriter(csvfile, fieldnames = fieldnames)	
-		writer.writeheader()		
-		writer.writerows(result)
+	if result:
+		with open("flats_test.csv", "w") as csvfile:
+			fieldnames = list(fieldnames)
+			writer = csv.DictWriter(csvfile, fieldnames = fieldnames)	
+			writer.writeheader()		
+			writer.writerows(result)
+		
+		minutes = int((stop-start)//60)
+		seconds = int((stop-start)%60)
+		print("\nzapisano", len(result)," mieszkań")
+		print("CZAS:\t",minutes," min ", seconds, " s")
+	else:
+		print("Coś poszło nie tak. Plik csv nie został utworzony.")
 
